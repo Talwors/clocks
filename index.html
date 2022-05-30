@@ -1,0 +1,218 @@
+<html>
+    <head>
+        <title>
+            Test clocks
+        </title>
+        <link rel="stylesheet" href="style.css">
+        
+    </head>
+    <body>
+        <div class="grid">
+            <div id="box">
+                <canvas id="clock"></canvas>
+            </div>
+        </div>
+    </body>
+    <script>
+        function Vector (magnitude, angle) {
+            var m, a;
+
+            this.getX = function () {
+                return m * Math.cos(a);
+            };
+
+            this.setX = function (x) {
+                var y = m * Math.sin(a);
+                m = Math.sqrt((x * x) + (y * y));
+                a = Math.atan2(y, x);
+            };
+
+            this.getY = function () {
+                return m * Math.sin(a);
+            };
+
+            this.setY = function (y) {
+                var x = m * Math.cos(a);
+                m = Math.sqrt((x * x) + (y * y));
+                a = Math.atan2(y, x);
+            };
+
+            this.getMag = function () {
+                return m;
+            };
+
+            this.setMag = function (magnitude) {
+                m = magnitude;
+            };
+
+            this.getAngle = function () {
+                return a;
+            };
+
+            this.setAngle = function (angle) {
+                a = angle;
+            };
+
+            this.add = function (v) {
+                return Vector.add(this, v);
+            };
+
+            this.subtract = function (v) {
+                return Vector.subtract(this, v);
+            };
+
+            this.setMag(magnitude);
+            this.setAngle(angle);
+        }
+
+        Vector.rectangular = function (x, y) {
+            var m = Math.sqrt(x * x + y * y),
+                a = Math.atan2(y, x);
+            return new Vector(m, a);
+        };
+
+        Vector.polar = function (m, a) {
+            return new Vector(m, a);
+        };
+
+        Vector.add = function (v1, v2) {
+            return Vector.rectangular(v1.getX() + v2.getX(), v1.getY() + v2.getY());
+        };
+
+        Vector.subtract = function (v1, v2) {
+            return Vector.rectangular(v1.getX() - v2.getX(), v1.getY() - v2.getY());
+        };
+        let ctx, cnvas;
+        function draw () {
+            
+                var date = new Date();
+                var day = date.getDate();
+                var mon = date.getMonth() + 1;
+                var year = date.getFullYear();
+                var hour = date.getHours();
+                var min = date.getMinutes();
+                var seconds = date.getSeconds();
+                var mil = date.getMilliseconds();
+                hour = updateTime(hour);
+                min = updateTime(min);
+                seconds = updateTime(seconds);
+                day = updateTime(day);
+                mon = updateTime(mon);
+                function updateTime(k) {
+                    if (k < 10) {
+                        return "0" + k;
+                    }
+                    else {
+                        return k;
+                    }
+                }
+                
+                function updateTime(k) {
+                if (k < 10) {
+                    return "0" + k;
+                }
+                else {
+                    return k;
+                }
+            }
+                digitalDate  = (day + "." + mon + "." +year)
+                digitalClock = (hour + " : " + min )
+                digitalSecs  = (seconds + "." + mil)
+                        
+            ctx.clearRect(0, 0, size, size);
+
+            ctx.lineCap = 'round';
+            c = {x: size / 2, y: size / 2};
+
+            face();
+            digital();
+            secondHand();
+        
+            function face () {
+                // Background
+                ctx.beginPath();
+                ctx.arc(c.x, c.y, size / 2, 0, Math.PI * 2);
+                ctx.fillStyle = "#1a1a1a";
+                ctx.fill();
+
+                // Dots
+                for (let i = 0; i < 60; i++) {
+                    if(i%10 == 0){
+                        ctx.lineWidth = 15;
+                    }else{
+                        ctx.lineWidth = 12;
+                    }
+                    let r = (size -20) / 2,
+                        l = 0;
+                    ctx.strokeStyle = 'rgb(100, 35, 35)';
+                    let v = new Vector(r, Math.PI * 2 * (i / 60) - Math.PI / 2);
+                    ctx.beginPath();
+                    ctx.moveTo(v.getX() + c.x, v.getY() + c.y);
+                    v.setMag(r + l);
+                    ctx.lineTo(v.getX() + c.x, v.getY() + c.y);
+                    ctx.stroke();  
+                }
+
+               
+            }
+
+            function digital () {
+                ctx.font = "400 4rem Noto Sans TC";
+                ctx.fillStyle = "rgb(214, 99, 54)"
+                ctx.textAlign = "center";
+                ctx.fillText(digitalDate, size/2, (size/2)-150);
+                ctx.font = "400 10rem Noto Sans TC";
+                ctx.fillText(digitalClock, size/2, (size/2));
+                ctx.font = "400 4rem Noto Sans TC";
+                ctx.fillText(digitalSecs, size/2, (size/2)+70);
+            }
+
+           
+
+            function secondHand () {
+                
+            
+                for (let i = 0; i < seconds; i++) {
+                    if(i%10 == 0){
+                        ctx.lineWidth = 15;
+                    }else{
+                        ctx.lineWidth = 12;
+                    }
+                    let r = (size -20) / 2,
+                        l = 0;
+                    ctx.strokeStyle = '#7fff00';
+                    
+                    let v = new Vector(r, Math.PI * 2 * (i / 60) - Math.PI / 2);
+                    ctx.beginPath();
+                    ctx.moveTo(v.getX() + c.x, v.getY() + c.y);
+                    v.setMag(r + l);
+                    ctx.lineTo(v.getX() + c.x, v.getY() + c.y);
+                    ctx.stroke();
+                } 
+            }  
+        }
+
+        function init () {
+            canvas = document.getElementById('clock');
+            width = window.innerWidth / 5 * 4.65;
+            height = window.innerHeight / 5 * 4.65;
+            if (width > height) {
+                size = height
+            }
+            else {
+                size = width
+            }
+            console.log(width +"*"+ height)
+            console.log("size: " + size)
+            canvas.width = canvas.height = size;
+            console.log("canvas.width: " + canvas.width)
+            console.log("canvas.height: " + canvas.height)
+            ctx = canvas.getContext('2d');
+        
+            setInterval(draw, 10); 
+        }
+
+        init();
+        
+    </script>
+</html>
